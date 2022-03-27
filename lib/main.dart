@@ -202,169 +202,177 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Color.fromARGB(255, 39, 127, 168),
-      body: SafeArea(
-          child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Center(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 40.0,
-                  ),
-                  Text(
-                    'Cloud Recorder',
-                    style: TextStyle(
+    return WillPopScope(
+      onWillPop: () async {
+        _player.stopPlayer();
+        _recorder.stopRecorder();
+        bool t = false;
+        return true;
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Color.fromARGB(255, 39, 127, 168),
+        body: SafeArea(
+            child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Center(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 40.0,
+                    ),
+                    Text(
+                      'Cloud Recorder',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 8.0,
+                    ),
+                    PopupMenuButton(
+                      onSelected: (value) async {
+                        if (value.toString() == 'un') {
+                          Util.clearToken();
+                          _reset(0);
+                        }
+                      },
                       color: Colors.white,
-                      fontSize: 28.0,
-                      fontWeight: FontWeight.bold,
+                      itemBuilder: (BuildContext cntxt) {
+                        return const [
+                          PopupMenuItem(
+                            child: Text('Unlink'),
+                            value: 'un',
+                          )
+                        ];
+                      },
+                    )
+                  ],
+                ),
+              ),
+              Container(
+                alignment: Alignment.center,
+                child: RawMaterialButton(
+                    fillColor: Colors.white,
+                    shape: StadiumBorder(
+                        side: BorderSide(
+                      color: Colors.grey,
+                    )),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        'Check Saved Recordings',
+                        style: TextStyle(
+                            color: Colors.blue, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    onPressed: () {
+                      _reset(0);
+                      setState(() {
+                        _success = false;
+                      });
+                      _finalPath = '';
+                      if (!_player.isStopped) {
+                        _player.stopPlayer();
+                      }
+
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const FileList()));
+                    }),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Center(
+                child: Text(
+                  '$dHour:$dMinute:$dSecond',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 80.0,
+                      fontWeight: FontWeight.w600),
+                ),
+              ),
+              Container(
+                height: 200,
+                width: MediaQuery.of(context).size.width - 10,
+                decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 66, 80, 126),
+                    borderRadius: BorderRadius.circular(8.0)),
+                child: Center(
+                    child: Player(startPlay, pausePlaying, _success, uploadMain,
+                        _player.isPlaying)),
+              ),
+              SizedBox(
+                height: 20.0,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: RawMaterialButton(
+                      onPressed: (!_started) ? _start : _stop,
+                      shape: const StadiumBorder(
+                          side: BorderSide(color: Colors.blue)),
+                      child: Text(
+                        (!_started) ? 'Start' : 'Pause',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                      fillColor: Color.fromRGBO(126, 132, 214, 2000),
                     ),
                   ),
                   SizedBox(
-                    width: 8.0,
+                    width: 12.0,
                   ),
-                  PopupMenuButton(
-                    onSelected: (value) async {
-                      if (value.toString() == 'un') {
-                        Util.clearToken();
-                        _reset(0);
-                      }
-                    },
-                    color: Colors.white,
-                    itemBuilder: (BuildContext cntxt) {
-                      return const [
-                        PopupMenuItem(
-                          child: Text('Unlink'),
-                          value: 'un',
+                  _isRecording
+                      ? BreathingGlowingButton(
+                          icon: Icons.stop,
+                          glowColor: Colors.white,
+                          buttonBackgroundColor: Colors.red,
+                          iconColor: Colors.white,
+                          onTap: saveRec,
+                          height: 35.0,
+                          width: 35.0,
                         )
-                      ];
-                    },
-                  )
+                      : SizedBox(
+                          width: 35.0,
+                        ),
+                  SizedBox(
+                    width: 12.0,
+                  ),
+                  Expanded(
+                    child: RawMaterialButton(
+                      onPressed: () {
+                        _reset(1);
+                      },
+                      fillColor: Colors.blue,
+                      shape: const StadiumBorder(
+                          side: BorderSide(color: Colors.blue)),
+                      child: Text(
+                        'Discard',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
-              ),
-            ),
-            Container(
-              alignment: Alignment.center,
-              child: RawMaterialButton(
-                  fillColor: Colors.white,
-                  shape: StadiumBorder(
-                      side: BorderSide(
-                    color: Colors.grey,
-                  )),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      'Check Saved Recordings',
-                      style: TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  onPressed: () {
-                    _reset(0);
-                    setState(() {
-                      _success = false;
-                    });
-                    _finalPath = '';
-                    if (!_player.isStopped) {
-                      _player.stopPlayer();
-                    }
-
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const FileList()));
-                  }),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Center(
-              child: Text(
-                '$dHour:$dMinute:$dSecond',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 80.0,
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-            Container(
-              height: 200,
-              width: MediaQuery.of(context).size.width - 10,
-              decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 66, 80, 126),
-                  borderRadius: BorderRadius.circular(8.0)),
-              child: Center(
-                  child: Player(startPlay, pausePlaying, _success, uploadMain,
-                      _player.isPlaying)),
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: RawMaterialButton(
-                    onPressed: (!_started) ? _start : _stop,
-                    shape: const StadiumBorder(
-                        side: BorderSide(color: Colors.blue)),
-                    child: Text(
-                      (!_started) ? 'Start' : 'Pause',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                    fillColor: Color.fromRGBO(126, 132, 214, 2000),
-                  ),
-                ),
-                SizedBox(
-                  width: 12.0,
-                ),
-                _isRecording
-                    ? BreathingGlowingButton(
-                        icon: Icons.stop,
-                        glowColor: Colors.white,
-                        buttonBackgroundColor: Colors.red,
-                        iconColor: Colors.white,
-                        onTap: saveRec,
-                        height: 35.0,
-                        width: 35.0,
-                      )
-                    : SizedBox(
-                        width: 35.0,
-                      ),
-                SizedBox(
-                  width: 12.0,
-                ),
-                Expanded(
-                  child: RawMaterialButton(
-                    onPressed: () {
-                      _reset(1);
-                    },
-                    fillColor: Colors.blue,
-                    shape: const StadiumBorder(
-                        side: BorderSide(color: Colors.blue)),
-                    child: Text(
-                      'Discard',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-      )),
+              )
+            ],
+          ),
+        )),
+      ),
     );
   }
 }

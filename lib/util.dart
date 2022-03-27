@@ -251,6 +251,7 @@ class Util {
     for (int i = 0; i < files.length; i++) {
       String? filePath = path.basename(files[i]['path']);
       String? temp = await Dropbox.getTemporaryLink('/$filePath');
+      print(temp);
       if (temp != null && temp != '') {
         files[i]['uploaded'] = true;
       } else {
