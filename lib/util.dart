@@ -251,8 +251,7 @@ class Util {
     for (int i = 0; i < files.length; i++) {
       String? filePath = path.basename(files[i]['path']);
       String? temp = await Dropbox.getTemporaryLink('/$filePath');
-      print(temp);
-      if (temp != null && temp != '') {
+      if (temp != null && temp.split(':')[0] == 'https') {
         files[i]['uploaded'] = true;
       } else {
         files[i]['uploaded'] = false;
